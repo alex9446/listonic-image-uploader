@@ -25,7 +25,9 @@ def main() -> bool:
     session.headers.update({'Authorization': f'Bearer {BEARER_TOKEN}'})
 
     # get lists from listonic
-    lists = session.get(f'{BASE_URL}/api/lists').json()
+    resp_lists = session.get(f'{BASE_URL}/api/lists')
+    if resp_lists.status_code == 401: exit('Bearer token expired!')
+    lists = resp_lists.json()
     ordered_lists = [
         {'name': list['Name'], 'url': list['Url']}
         for list in sorted(lists, key=lambda l: l['SortOrder'], reverse=True)
