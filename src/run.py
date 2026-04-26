@@ -1,8 +1,9 @@
 import inquirer
 import logging
-import requests
 from argparse import ArgumentParser
-from os import getenv, listdir, path
+from requests import Session
+from os import listdir, path
+from .get_bearer_token import get_bearer_token
 
 logger = logging.getLogger(__name__)
 
@@ -16,13 +17,10 @@ def main() -> bool:
     parser.add_argument('--image-path', default='.')
     args = parser.parse_args()
 
-    BEARER_TOKEN = getenv('BEARER_TOKEN')
-    if not BEARER_TOKEN:
-        logger.critical('Missing environment variable')
-        return False
+    access_token = get_bearer_token(BASE_URL)
 
-    session = requests.Session()
-    session.headers.update({'Authorization': f'Bearer {BEARER_TOKEN}'})
+    session = Session()
+    session.headers.update({'Authorization': f'Bearer {access_token}'})
 
     # get lists from listonic
     resp_lists = session.get(f'{BASE_URL}/api/lists')
