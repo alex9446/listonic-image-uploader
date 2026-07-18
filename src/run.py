@@ -32,16 +32,24 @@ def main() -> bool:
     ]
 
     # promt lists
-    answer = inquirer.prompt([inquirer.List(
-        name='list',
-        message='Select a list to use',
-        choices=[f'{index+1}. {list['name']}'
-                 for index, list in enumerate(ordered_lists)]
-    )])
+    answer = inquirer.prompt([
+        inquirer.List(
+            name='list',
+            message='Select a list to use',
+            choices=[f'{index+1}. {list['name']}'
+                    for index, list in enumerate(ordered_lists)]
+        ),
+        inquirer.Text(
+            name='description',
+            message='Products description (optional)'
+        )
+    ])
     if not answer: return False
 
     answer_index = int(answer['list'].split('.')[0])-1
     selected_list = ordered_lists[answer_index]
+
+    description = answer['description']
 
     # get images, by default from the current folder
     images = [i for i in listdir(args.image_path)
@@ -50,8 +58,9 @@ def main() -> bool:
     # add items and images to listonic
     for image in images:
         item_name = image[:-len(IMAGE_EXTENSION)]
+        item_json = { 'name': item_name, 'description': description }
         resp_item = session.post(f'{BASE_URL}{selected_list['url']}/items',
-                                json={'name': item_name})
+                                json=item_json)
         if resp_item.status_code != 201:
             logger.error(f'Error while creating item: {item_name}')
             continue
